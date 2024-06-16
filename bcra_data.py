@@ -30,11 +30,23 @@ def normalize(all_v_df):
 def invert(all_normalized_df, variables_to_invert):
     normalized_df = all_normalized_df.copy()
     for id_var in variables_to_invert:
-        print(id_var)
         normalized_df[id_var] = 100 - normalized_df[id_var] 
         
         
     return normalized_df
+
+def market_sentiment(x):
+    if x < 20:
+        return 'Extreme Fear'
+    elif x >= 20 and x < 40:
+        return 'Fear'
+    elif x >= 40 and x < 60:
+        return 'Neutral'
+    elif x >= 60 and x <80:
+        return 'Greed'
+    elif x >= 80 and x <= 95:
+        return 'Sell all your bitcoins right now'
+
         
 # ============================== ENDPOINTS ==============================
 bcra_url = "https://api.bcra.gob.ar/estadisticas/v2.0/PrincipalesVariables"
@@ -191,41 +203,61 @@ get_out_datetime[
     ] = get_out_datetime.apply(
         lambda row: np.dot(row, ponderaciones),
         axis=1)
+        
+# for row in get_out_datetime:
+#     if row.loc['fear_and_greed_index'] <= 20:
+#         get_out_datetime['sentiment'] = 'Extreme fear'
+#     elif row.loc['fear_and_greed_index'] > 20 and row['fear_and_greed_index'] <=40:
+#         get_out_datetime['sentiment'] = 'Fear'
+#     elif row.loc['fear_and_greed_index'] > 40 and row['fear_and_greed_index'] <=60:
+#         get_out_datetime['sentiment'] = 'Neutral'
+#     elif row.loc['fear_and_greed_index'] > 60 and row['fear_and_greed_index'] <= 80:
+#         get_out_datetime['sentiment'] = 'Greed'
+#     elif row.loc['fear_and_greed_index'] > 80 and row['fear_and_greed_index'] <=95:
+#         get_out_datetime['sentiment'] = 'Extreme Greed'
+#     elif row.loc['fear_and_greed_index'] > 95 and row['fear_and_greed_index']<=100:
+#         get_out_datetime['sentiment'] = 'Sell all your assets right now'
+
+
+    
+#Forma más fácil y "limpia"
+get_out_datetime['Sentiment'] = get_out_datetime[
+    'fear_and_greed_index'
+    ].apply(market_sentiment)
+
+    
+
+#2da forma
+# get_out_datetime.loc[
+#     get_out_datetime['fear_and_greed_index'] < 20,
+#     'sentiment'] = 'Extreme fear'
+# get_out_datetime.loc[
+#     get_out_datetime['fear_and_greed_index'] >= 20,
+#     'sentiment'] = 'Fear'
+# get_out_datetime.loc[
+#     get_out_datetime['fear_and_greed_index'] >= 40,
+#     'sentiment'] = 'Neutral'
+# get_out_datetime.loc[
+#     get_out_datetime['fear_and_greed_index'] >= 60,
+#     'sentiment'] = 'Greed'
+# get_out_datetime.loc[
+#     get_out_datetime['fear_and_greed_index'] >= 80,
+#     'sentiment'] = 'Extreme greed'
+# get_out_datetime.loc[
+#     get_out_datetime['fear_and_greed_index'] >= 95,
+#     'sentiment'] = 'Sell all your assets right now'
+
+#3ra forma - Deberíamos cambiar los nombres de las variables.
+#Está buena pero es muy engorrosa y más con los nombres de variables largos
+#que tenemos
+#df['col2'] = np.where(df['col1'] < 20, 'A',
+#             np.where(df['col1'] < 40, 'B', 'C'))
+
 
 #No hago merge, hago concat porque para merge no tengo variable que confluya.
 final_df = pd.concat([datetime_to_merge, get_out_datetime], axis=1)
 
 
-
-
-
-
-
-
-
-# index = []
-# for indexkey in ids_variables:
-#     index.append(indexkey)
-
-# index = pd.Series(index)
-
-# seviene = pd.DataFrame()
-# seviene['ids'] = index
-
-
-
-#ids_variables_df = pd.DataFrame(ids_variables, index=index)
-
-#ponderaciones = pd.Series(ponderaciones)
-
-
-
-# vars_ponderaciones = pd.merge(
-#       ids_variables_df,
-#      ponderaciones,
-#      on=)
-
-#fandg_index = fear_and_greed_index(all_variables, vars_ponderaciones)
 
 
 
@@ -257,10 +289,10 @@ final_df = pd.concat([datetime_to_merge, get_out_datetime], axis=1)
 # Podemos hacer un fear & greed index, basado en estas variables
 
 
-# Devuelve directamente los valores
-# for var in bcra_request:
-#     for data in var:
-    # print(var[data])
+#Devuelve directamente los valores
+#for var in bcra_request:
+#    for data in var:
+#        print(var[data])
 
 
 # Devuelve también el nombre de las variables
