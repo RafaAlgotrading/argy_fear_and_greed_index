@@ -2,8 +2,12 @@ import requests
 import datetime as dt
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 
 
+
+
+# ============================== FUNCIONES ==============================
 def specific_request(id, from_date, up_to_date):
     request = requests.get(
         bcra_specific_url + f'{id}/{from_date}/{up_to_date}',
@@ -12,7 +16,7 @@ def specific_request(id, from_date, up_to_date):
 
     return request
 
-# ============================== FUNCIONES ==============================
+
 def normalize(all_v_df):
     #Para evitar la columna fecha puedo dropearla por el momento o validarla
     # en un if. Quizá lo mejor es validarla, para así devolver un df
@@ -26,6 +30,7 @@ def normalize(all_v_df):
                           ) / (df[column].max() - df[column].min()) * 100 
                 
     return df  #series - series.min()) / (series.max() - series.min()) * 100
+
             
 def invert(all_normalized_df, variables_to_invert):
     normalized_df = all_normalized_df.copy()
@@ -196,6 +201,7 @@ get_out_datetime = all_normalized_and_inverted_variables
 
 #Podríamos crear una func para que devuelva el indice en ambas formas o
 # donde valga 0, buscar llenarlo con el previo último valor válido.
+
 get_out_datetime = get_out_datetime.fillna(get_out_datetime.mean())
 
 get_out_datetime[
@@ -258,6 +264,39 @@ get_out_datetime['Sentiment'] = get_out_datetime[
 final_df = pd.concat([datetime_to_merge, get_out_datetime], axis=1)
 
 
+final_plot = final_df.plot(
+    figsize=(16, 12),
+    kind='line',
+    x='fecha',
+    y='fear_and_greed_index',
+    grid=True,
+    colormap='viridis',
+    linewidth=3.5
+    )
+
+#Mostrar la linea 0 y la linea 100 'deteriora' el gráfico
+#final_plot.axhline(0, linestyle="solid", color='black')
+#final_plot.axhline(100, linestyle="solid", color='black')
+
+final_plot.axhline(
+    final_df['fear_and_greed_index'].mean(),
+    linestyle="dashed",
+    color='red',
+    linewidth=3
+    )
+
+
+final_plot.set_xlabel('Fecha', fontsize=25)
+final_plot.set_ylabel('Fear and Greed Index', fontsize=25)
+final_plot.set_title(
+    'Fear and Greed Index a lo largo del tiempo',
+    fontsize=35
+    )
+
+
+
+# Asegurarse de que la columna 'fecha' esté en el formato de fecha.
+final_df['fecha'] = pd.to_datetime(final_df['fecha'])
 
 
 
