@@ -209,20 +209,6 @@ get_out_datetime[
     ] = get_out_datetime.apply(
         lambda row: np.dot(row, ponderaciones),
         axis=1)
-        
-# for row in get_out_datetime:
-#     if row.loc['fear_and_greed_index'] <= 20:
-#         get_out_datetime['sentiment'] = 'Extreme fear'
-#     elif row.loc['fear_and_greed_index'] > 20 and row['fear_and_greed_index'] <=40:
-#         get_out_datetime['sentiment'] = 'Fear'
-#     elif row.loc['fear_and_greed_index'] > 40 and row['fear_and_greed_index'] <=60:
-#         get_out_datetime['sentiment'] = 'Neutral'
-#     elif row.loc['fear_and_greed_index'] > 60 and row['fear_and_greed_index'] <= 80:
-#         get_out_datetime['sentiment'] = 'Greed'
-#     elif row.loc['fear_and_greed_index'] > 80 and row['fear_and_greed_index'] <=95:
-#         get_out_datetime['sentiment'] = 'Extreme Greed'
-#     elif row.loc['fear_and_greed_index'] > 95 and row['fear_and_greed_index']<=100:
-#         get_out_datetime['sentiment'] = 'Sell all your assets right now'
 
 
     
@@ -230,34 +216,6 @@ get_out_datetime[
 get_out_datetime['Sentiment'] = get_out_datetime[
     'fear_and_greed_index'
     ].apply(market_sentiment)
-
-    
-
-#2da forma
-# get_out_datetime.loc[
-#     get_out_datetime['fear_and_greed_index'] < 20,
-#     'sentiment'] = 'Extreme fear'
-# get_out_datetime.loc[
-#     get_out_datetime['fear_and_greed_index'] >= 20,
-#     'sentiment'] = 'Fear'
-# get_out_datetime.loc[
-#     get_out_datetime['fear_and_greed_index'] >= 40,
-#     'sentiment'] = 'Neutral'
-# get_out_datetime.loc[
-#     get_out_datetime['fear_and_greed_index'] >= 60,
-#     'sentiment'] = 'Greed'
-# get_out_datetime.loc[
-#     get_out_datetime['fear_and_greed_index'] >= 80,
-#     'sentiment'] = 'Extreme greed'
-# get_out_datetime.loc[
-#     get_out_datetime['fear_and_greed_index'] >= 95,
-#     'sentiment'] = 'Sell all your assets right now'
-
-#3ra forma - Deberíamos cambiar los nombres de las variables.
-#Está buena pero es muy engorrosa y más con los nombres de variables largos
-#que tenemos
-#df['col2'] = np.where(df['col1'] < 20, 'A',
-#             np.where(df['col1'] < 40, 'B', 'C'))
 
 
 #No hago merge, hago concat porque para merge no tengo variable que confluya.
@@ -296,50 +254,9 @@ final_plot.set_title(
 
 
 # Asegurarse de que la columna 'fecha' esté en el formato de fecha.
+# La ponemos como index y dropeamos la columna
 final_df['fecha'] = pd.to_datetime(final_df['fecha'])
+final_df.set_index(final_df['fecha'], inplace=True)
+final_df.drop(['fecha'], axis=1, inplace=True)
 
 
-
-
-
-#Las variables se van a ir multiplicando por lo que el f & g index se
-# actualizaria dia a dia peeero, podemos calcular uno frente al mes pasado
-# según determinadas varibles p.e.
-
-
-
-
-
-
-
-
-
-
-# Indicadores que puedan seguir, valga la redundancia, indicando
-# momentum positivo para el país y el mercado.
-
-# ej. inflación -mensual, interanual, esperada-, reservas bcra, pases pasivos
-# ¿tasas de interes?, ¿tipo de cambio?
-
-# ej. La inflación de ahora, es menor que la del mes pasado?
-# Voy haciendo un track record de los % de inflación.
-
-
-# Podemos hacer un fear & greed index, basado en estas variables
-
-
-#Devuelve directamente los valores
-#for var in bcra_request:
-#    for data in var:
-#        print(var[data])
-
-
-# Devuelve también el nombre de las variables
-# for var in bcra_request: #Toma elemento por elemento
-#     for key, value in var.items(): #Esto se aplica solo a diccionarios.
-#         print(key, value)
-
-
-
-# inflaciones_mensuales = specific_request(27, january, today_date)
-# reservas_int_mensuales = specific_request(1, january, today_date)
