@@ -5,6 +5,11 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+# ============================== ENDPOINTS ==============================
+bcra_url = "https://api.bcra.gob.ar/estadisticas/v2.0/PrincipalesVariables"
+bcra_specific_url = "https://api.bcra.gob.ar/estadisticas/v2.0/DatosVariable/"
+
+
 
 
 # ============================== FUNCIONES ==============================
@@ -51,13 +56,46 @@ def market_sentiment(x):
         return 'Greed'
     elif x >= 80 and x <= 95:
         return 'Sell all your bitcoins right now'
-
-        
-# ============================== ENDPOINTS ==============================
-bcra_url = "https://api.bcra.gob.ar/estadisticas/v2.0/PrincipalesVariables"
-bcra_specific_url = "https://api.bcra.gob.ar/estadisticas/v2.0/DatosVariable/"
-
-
+    
+    
+    
+    
+def fandg_plot(final_df, periods):
+    
+    #Plotea según el periodo ingresado. Pongo (-) para que me traiga los
+    # últimos, es decir, los más actuales.
+    final_df = final_df[-periods:]
+    
+    final_plot = final_df.plot(
+        figsize=(16, 12),
+        kind='line',
+        #x= [index for index in final_df.index],
+        y='fear_and_greed_index',
+        grid=True,
+        colormap='viridis',
+        linewidth=3.5
+        )
+    
+    #Mostrar la linea 0 y la linea 100 'deteriora' el gráfico
+    #final_plot.axhline(0, linestyle="solid", color='black')
+    #final_plot.axhline(100, linestyle="solid", color='black')
+    
+    final_plot.axhline(
+        final_df['fear_and_greed_index'].mean(),
+        linestyle="dashed",
+        color='red',
+        linewidth=3
+        )
+    
+    
+    final_plot.set_xlabel('Fecha', fontsize=25)
+    final_plot.set_ylabel('Fear and Greed Index', fontsize=25)
+    final_plot.set_title(
+        'Fear and Greed Index a lo largo del tiempo',
+        fontsize=35
+        )
+    
+    
 
 # ========================= PROGRAMA PRINCIPAL =========================
 bcra_request = requests.get(bcra_url, verify=False).json()["results"]
@@ -202,7 +240,15 @@ get_out_datetime = all_normalized_and_inverted_variables
 #Podríamos crear una func para que devuelva el indice en ambas formas o
 # donde valga 0, buscar llenarlo con el previo último valor válido.
 
-get_out_datetime = get_out_datetime.fillna(get_out_datetime.mean())
+#get_out_datetime = get_out_datetime.fillna(get_out_datetime.mean())
+
+
+
+get_out_datetime.replace(0, np.nan, inplace=True)
+get_out_datetime.ffill(inplace=True)
+get_out_datetime.replace(np.nan, 0, inplace=True)
+
+
 
 get_out_datetime[
     'fear_and_greed_index'
@@ -221,42 +267,18 @@ get_out_datetime['Sentiment'] = get_out_datetime[
 #No hago merge, hago concat porque para merge no tengo variable que confluya.
 final_df = pd.concat([datetime_to_merge, get_out_datetime], axis=1)
 
-
-final_plot = final_df.plot(
-    figsize=(16, 12),
-    kind='line',
-    x='fecha',
-    y='fear_and_greed_index',
-    grid=True,
-    colormap='viridis',
-    linewidth=3.5
-    )
-
-#Mostrar la linea 0 y la linea 100 'deteriora' el gráfico
-#final_plot.axhline(0, linestyle="solid", color='black')
-#final_plot.axhline(100, linestyle="solid", color='black')
-
-final_plot.axhline(
-    final_df['fear_and_greed_index'].mean(),
-    linestyle="dashed",
-    color='red',
-    linewidth=3
-    )
-
-
-final_plot.set_xlabel('Fecha', fontsize=25)
-final_plot.set_ylabel('Fear and Greed Index', fontsize=25)
-final_plot.set_title(
-    'Fear and Greed Index a lo largo del tiempo',
-    fontsize=35
-    )
-
-
-
 # Asegurarse de que la columna 'fecha' esté en el formato de fecha.
 # La ponemos como index y dropeamos la columna
 final_df['fecha'] = pd.to_datetime(final_df['fecha'])
 final_df.set_index(final_df['fecha'], inplace=True)
 final_df.drop(['fecha'], axis=1, inplace=True)
+
+
+
+fandg_plot(final_df, 60)
+
+
+
+
 
 
